@@ -1,0 +1,29 @@
+# ===== Maven =====
+/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# ===== Java =====
+*.class
+*.log
+
+# ===== Eclipse =====
+.classpath
+.project
+.settings/
+
+# ===== IntelliJ / VS Code (safe to ignore) =====
+.idea/
+.vscode/
+*.iml
+
+# ===== OS files =====
+.DS_Store
+Thumbs.db
+
+# ===== JavaFX runtime (if generated) =====
+jre/

@@ -1,0 +1,130 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.sudoku</groupId>
+    <artifactId>sudoku-solver</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <!-- Set compiler to Java 21 to match your JDK -->
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        
+        <javafx.version>21</javafx.version> 
+        <mainClass>com.sudoku.gui.SudokuApp</mainClass> 
+        <!-- Store the executable path for clarity -->
+        <exec.executable>"C:\Program Files\Java\jdk-21\bin\java.exe"</exec.executable>
+    </properties>
+
+    <dependencies>
+        <!-- JavaFX Controls (Required for the GUI) -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <!-- JavaFX FXML (Best practice for JavaFX UI) -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <!-- ND4J Dependency for AI Integration (As defined in your plan) -->
+        <dependency>
+            <groupId>org.nd4j</groupId>
+            <artifactId>nd4j-native</artifactId>
+            <version>1.0.0-M2.1</version>
+        </dependency>
+        <!-- Platform Dependency for Exec Plugin (Needed for module resolution on Windows) -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>win</classifier>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- 1. Maven Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
+            
+            <!-- 2. JavaFX Maven Plugin (Only for dependency resolution) -->
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <mainClass>${mainClass}</mainClass>
+                </configuration>
+            </plugin>
+            
+            <!-- 
+                *** 3. Dependency Plugin: Copies all dependencies into target/lib 
+                This makes the manual classpath (step 4) much easier to construct.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <!-- We run this in the package phase -->
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <!-- Use wildcards for the classpath -->
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 
+                *** 4. FINAL EXECUTION FIX: Using exec:exec ***
+                This goal allows us to construct the full command line manually, 
+                avoiding the exec:java parsing error.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <!-- Use the full path to java.exe -->
+                    <executable>${exec.executable}</executable> 
+                    <arguments>
+                        <!-- 1. Module Path (for JavaFX platform modules) -->
+                        <argument>--module-path</argument>
+                        <argument>${settings.localRepository}/org/openjfx/javafx-controls/${javafx.version}/javafx-controls-${javafx.version}-win.jar;${settings.localRepository}/org/openjfx/javafx-fxml/${javafx.version}/javafx-fxml-${javafx.version}-win.jar</argument>
+                        
+                        <!-- 2. Add Modules -->
+                        <argument>--add-modules</argument>
+                        <argument>javafx.controls,javafx.fxml</argument>
+                        
+                        <!-- 3. Classpath: project classes + all dependencies in the new 'lib' folder -->
+                        <argument>-classpath</argument>
+                        <argument>${project.build.directory}/classes;${project.build.directory}/lib/*</argument>
+                        
+                        <!-- 4. Main Class (The actual class to run) -->
+                        <argument><mainClass>com.sudoku.gui.SudokuApp</mainClass>
+</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
